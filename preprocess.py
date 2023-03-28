@@ -87,7 +87,7 @@ def preprocessing(min_sample, timeout, train_path, test_path, inside_ip_set, sco
     print("Data Scaling...")
     scaler = MinMaxScaler()
     train_idx = np.where(np.array(train_label) == 1)
-    train_x = scaler.fit_transform(np.array(train_data)[train_idx[0], 1:-1])
-    test_x = scaler.transform(np.array(test_data)[:, 1:-1])
+    train_x = scaler.fit_transform(np.array(train_data)[train_idx[0], 1:])
+    test_x = scaler.transform(np.array(test_data)[:, 1:])
     test_ip_list = np.array(test_data)[:, 0]
     return train_x, test_x, test_label, test_ip_list

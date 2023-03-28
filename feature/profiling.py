@@ -66,7 +66,7 @@ class CountBasedProfile(CommonProfile):
         for profile in tqdm(self.profile_list):
             for i, feature in enumerate(self.feature_list):
                 self.feature_matrix[i].append(self.feature_func_map[feature](profile))
-            self.profile_key_list.append(profile.profile_key)
+            # self.profile_key_list.append(profile.profile_key)
         self.feature_matrix = np.array(self.feature_matrix).T.tolist()
 
     def grouping_flow(self, flow, now_time, target_ip):

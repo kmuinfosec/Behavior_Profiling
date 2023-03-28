@@ -1,3 +1,6 @@
+import pickle
+import sys
+
 from feature.profiling import CountBasedProfile, TimeBasedProfile
 
 
@@ -57,9 +60,9 @@ def run_profiling(data_path, inside_ip_set, min_sample, timeout, score_dict, lab
             label.append(0)
         else:
             label.append(0 if score_dict[ip][0] < label_score else 1)
-
     stat = profiler.get_stat()
     cal_stat(stat, label, min_sample)
+
     return data_list, label, key_list, stat
 
 

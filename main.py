@@ -24,7 +24,7 @@ def experiments(min_sample, timeout, save_path, label_set='Abused'):
     save_result(min_sample, timeout, save_path, test_label, rce_list, ip_list, score_dict, label_set)
 
 def main():
-    parser = optparse.OptionParser('usage %prog -t nmap/python -H' + '<target host> -p <target port>')
+    parser = optparse.OptionParser('usage %prog -t timeout -m min_sample -l Abused')
     parser.add_option('-m', dest='min_sample', type='int', help='minimum sample count')
     parser.add_option('-t', dest='timeout', type='int', help='maximum timeout')
     parser.add_option('-p', dest='data_path', type='string', help='pickle data path')
