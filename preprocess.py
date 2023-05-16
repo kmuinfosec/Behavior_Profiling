@@ -27,6 +27,25 @@ def parse_config_file(file_path, target='kookmin'):
     return content_list
 
 
+def parse_config_dict(file_path):
+    with open(file_path, 'r') as f:
+        lines = list(map(str.strip, f.readlines()))
+
+    content_list = []
+    for target in ['AbusedIPDB', 'GreyNoise']:
+        is_find = False
+        for line in lines:
+            if not is_find:
+                if line == '[' + target + ']':
+                    is_find = True
+            else:
+                if line.startswith('[') and line.endswith(']'):
+                    break
+                if line:
+                    content_list.append(line)
+    return content_list
+
+
 def inflate_subnet_ip(inside_ip_list):
     total_ip_set = set()
     for inside_ip in inside_ip_list:
@@ -58,17 +77,19 @@ def load_data(min_sample, timeout, data_path, phase, score_dict):
 
 
 def load_raw(label_set):
-    if label_set == 'Abused':
-        with open(r"C:\jupyter_project\NCSC2023\Dataset\ip_score_date.pkl", 'rb') as f:
-            score_dict = pickle.load(f)
-    elif label_set == 'GN':
-        with open(r"C:\jupyter_project\NCSC2023\Dataset\GN_Label_dict.pickle", 'rb') as f:
-            score_dict = pickle.load(f)
-
     train_path_list = parse_config_file(r'./config/train_dir.txt')
     test_path_list = parse_config_file(r'./config/test_dir.txt')
     inside_ip_list = parse_config_file(r'./config/inside_list.txt')
     inside_ip_set = inflate_subnet_ip(inside_ip_list)
+
+    abused_path, gn_path = parse_config_dict(r'./config/label_dir.txt')
+    if label_set == 'Abused':
+        with open(abused_path, 'rb') as f:
+            score_dict = pickle.load(f)
+    elif label_set == 'GN':
+        with open(gn_path, 'rb') as f:
+            score_dict = pickle.load(f)
+
     return train_path_list, test_path_list, inside_ip_set, score_dict
 
 

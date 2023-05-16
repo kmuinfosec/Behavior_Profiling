@@ -1,10 +1,12 @@
 import gc
+import os
 
 import optparse
 
 from preprocess import preprocessing, load_raw
 from result import save_result
 from model import train, test
+from utils import format_date
 
 
 def experiments(min_sample, timeout, save_path, label_set='Abused'):
@@ -34,8 +36,9 @@ def main():
     timeout = options.timeout
     label_set = options.label_set
 
-    save_path = r"D:\behavior(over)_result"
-
+    save_dir = r"D:\Behavior_Profiling_result"
+    save_path = os.path.join(save_dir, format_date(6))
+    os.mkdir(os.path.join(save_dir, format_date(6)))
     # for timeout in [60, 4*60, 12*60, 48*60]:
     #     experiments(min_sample, timeout, label_set)
     #     gc.collect()

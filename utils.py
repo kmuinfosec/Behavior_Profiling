@@ -1,4 +1,6 @@
 import os
+
+import numpy as np
 from datetime import datetime
 
 datetime_format = '%Y-%m-%d %H:%M:%S.%f'
@@ -29,3 +31,38 @@ def make_col_index(data_path):
         tmp = f.readline().strip().split(',')
         column_index = {i : idx for idx, i in enumerate(tmp)}
         return column_index
+
+
+def gini(value_list):
+    uniq_value, count = np.unique(value_list, return_counts=True)
+    gini_value = 1
+
+    for c in count:
+        gini_value -= (c/sum(count)) ** 2
+
+    return gini_value
+
+
+def format_date(precision):
+    format_order = ["%Y", "%m", "%d", "%H", "%M", "%S"]
+    format_str = ""
+    for i, fmt in enumerate(format_order):
+        if i == precision + 1:
+            break
+        else:
+            format_str += fmt
+            if i == 2:
+                format_str += '_'
+
+    return datetime.today().strftime(format_str)
+
+
+def get_time_window(start_time, time_window):
+    datetime_format = '%Y-%m-%d %H:%M:%S'
+    ts_timestamp = datetime.strptime(start_time, datetime_format).timestamp()
+    window_start = ts_timestamp - (ts_timestamp % time_window)
+    window_end = window_start + time_window
+    window_start_str = datetime.fromtimestamp(window_start).strftime(datetime_format)
+    window_end_str = datetime.fromtimestamp(window_end).strftime(datetime_format)
+
+    return window_start_str, window_end_str

@@ -4,7 +4,7 @@ import sys
 from feature.profiling import CountBasedProfile, TimeBasedProfile
 
 
-def cal_stat(stat_dict, label_list, min_data):
+def cal_stat(stat_dict, label_list, sampling, min_data):
     ip_list = stat_dict.keys()
     attack_size_list, attack_max_list, benign_size_list, benign_max_list = [], [], [], []
     count_ip_dict = {"BEN": {"pos": 0, "neg": 0}, "MAL": {"pos": 0, "neg": 0}}
@@ -14,26 +14,26 @@ def cal_stat(stat_dict, label_list, min_data):
         if label_list[idx] == 1:
             attack_size_list += stat_dict[ip]
             attack_max_list.append(max(stat_dict[ip]))
-            if max(stat_dict[ip]) == min_data:
+            if max(stat_dict[ip]) >= min_data:
                 count_ip_dict['MAL']['pos'] += 1
             else:
                 count_ip_dict['MAL']['neg'] += 1
 
             for c in stat_dict[ip]:
-                if c == min_data:
+                if c == sampling:
                     count_data_dict['MAL']['pos'] += 1
                 else:
                     count_data_dict['MAL']['neg'] += 1
         else:
             benign_size_list += stat_dict[ip]
             benign_max_list.append(max(stat_dict[ip]))
-            if max(stat_dict[ip]) == min_data:
+            if max(stat_dict[ip]) >= min_data:
                 count_ip_dict['BEN']['pos'] += 1
             else:
                 count_ip_dict['BEN']['neg'] += 1
 
             for c in stat_dict[ip]:
-                if c == min_data:
+                if c == sampling:
                     count_data_dict['BEN']['pos'] += 1
                 else:
                     count_data_dict['BEN']['neg'] += 1
@@ -46,22 +46,26 @@ def cal_stat(stat_dict, label_list, min_data):
 
 def run_profiling(data_path, inside_ip_set, min_sample, timeout, score_dict, label_score=90, method='count'):
     if method == 'time':
-        profiler = TimeBasedProfile(data_path, inside_ip_set, min_sample, timeout, 'discard')
+        profiler = TimeBasedProfile(data_path, inside_ip_set, min_sample, timeout, 'hybrid')
     else:
-        profiler = CountBasedProfile(data_path, inside_ip_set, min_sample, timeout, 'discard')
+        profiler = CountBasedProfile(data_path, inside_ip_set, min_sample, timeout, 'hybrid')
 
     profiler.profiling()
     data_list = profiler.get_matrix()
     key_list = profiler.get_keys()
     label = []
     for key in key_list:
-        ip, st, et = key.split('_')
+        tmp = key.split('_')
+        if len(tmp) == 3:
+            ip, st, et = tmp
+        else:
+            ip, _, st, et = tmp
         if ip not in score_dict:
             label.append(0)
         else:
-            label.append(0 if score_dict[ip][0] < label_score else 1)
+            label.append(0 if score_dict[ip][0][0] < label_score else 1)
     stat = profiler.get_stat()
-    cal_stat(stat, label, min_sample)
+    cal_stat(stat, label, min_sample, 3)
 
     return data_list, label, key_list, stat
 
