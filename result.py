@@ -78,6 +78,19 @@ def save_result(min_sample, timeout, save_path, label, rce_list, ip_list, score_
     print_csv(min_sample, timeout, save_path, label, rce_list, ip_list, score_dict, label_set, 100)
 
 
+def save_config(save_path, min_sample, hybrid_count, timeout, preprocessing_path, label_set):
+    with open(rf"{save_path}\config.txt", 'w', newline='', encoding='utf-8') as f:
+        f.write('Profiling : Count\n')
+        f.write('Method : Hybrid\n')
+        f.write(f'MinSample :{min_sample}\n')
+        f.write(f'Hybrid Count :{hybrid_count}\n')
+        f.write(f'Timeout :{timeout}\n')
+        if preprocessing_path:
+            f.write(f'Preprocessing Path :{preprocessing_path}\n')
+        f.write(f'Label API :{label_set}\n')
+        f.write(f'Save Path : {save_path}')
+
+
 def main():
     pass
 

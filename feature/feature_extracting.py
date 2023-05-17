@@ -44,13 +44,24 @@ def cal_stat(stat_dict, label_list, sampling, min_data):
     print("Neg_benign_data :", count_data_dict['BEN']['neg'], "Neg_mal_data :", count_data_dict['MAL']['neg'])
 
 
-def run_profiling(data_path, inside_ip_set, min_sample, timeout, score_dict, label_score=90, method='count'):
-    if method == 'time':
-        profiler = TimeBasedProfile(data_path, inside_ip_set, min_sample, timeout, 'hybrid')
+def run_profiling(data_path, save_path, inside_ip_set, min_sample, timeout, score_dict, label_score=90, method='count', hybrid=3):
+    if '.pkl' in data_path:
+        with open(data_path, 'rb') as f:
+            profiler = pickle.load(f)
     else:
-        profiler = CountBasedProfile(data_path, inside_ip_set, min_sample, timeout, 'hybrid')
+        if method == 'time':
+            profiler = TimeBasedProfile(data_path, inside_ip_set, min_sample, timeout, 'hybrid')
+        else:
+            profiler = CountBasedProfile(data_path, inside_ip_set, min_sample, timeout, 'hybrid', hybrid)
+        profiler.profiling()
 
-    profiler.profiling()
+        if '.pkl' not in save_path:
+            save_path = rf"{save_path}\train_profile.pkl"
+        else:
+            save_path = rf"{save_path}\test_profile.pkl"
+        with open(save_path, 'wb') as f:
+            pickle.dump(profiler, f)
+
     data_list = profiler.get_matrix()
     key_list = profiler.get_keys()
     label = []

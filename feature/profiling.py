@@ -56,7 +56,7 @@ class CountBasedProfile(CommonProfile):
         elif sip[-1] == '_' and dip[-1] != '_':
             target_ip = dip
         else:
-            target_ip =  sip
+            target_ip = sip
         # if sip not in self.inside_ip_set and dip not in self.inside_ip_set:
         #     return None
         # elif sip in self.inside_ip_set and dip not in self.inside_ip_set:
