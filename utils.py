@@ -66,3 +66,20 @@ def get_time_window(start_time, time_window):
     window_end_str = datetime.fromtimestamp(window_end).strftime(datetime_format)
 
     return window_start_str, window_end_str
+
+
+def init_config(options):
+    config = {}
+    config['mode'] = options.mode if options.mode else 'count'
+    config['method'] = options.mode if options.method else 'hybrid'
+    config['min_sample'] = options.min_sample if options.min_sample else 5
+    config['timeout'] = options.timeout if options.timeout else 3600
+    config['label_set'] = options.label_set if options.label_set else 'Abused'
+    config['hybrid_count'] = options.hybrid_count if options.hybrid_count else 3
+    config['abused_score'] = options.abused if options.abused else 90
+    config['k'] = options.k if options.k else 100
+    if options.preprocessing_path:
+        config['preprocessing_path'] = os.path.abspath(options.preprocessing_path)
+    else:
+        config['preprocessing_path'] = False
+    return config

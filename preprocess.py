@@ -93,15 +93,13 @@ def load_raw(label_set):
     return train_path_list, test_path_list, inside_ip_set, score_dict
 
 
-def preprocessing(min_sample, timeout, train_path, test_path, save_path, inside_ip_set, score_dict, hybrid_count=5):
+def preprocessing(train_path, test_path, inside_ip_set, score_dict, config):
     print("Train Profiling")
-    train_data, train_label, train_key, train_stat = run_profiling(train_path, save_path, inside_ip_set, min_sample, timeout,
-                                                                   score_dict, 90, 'count', hybrid_count)
+    train_data, train_label, train_key, train_stat = run_profiling('train', train_path, inside_ip_set, score_dict, config)
     print("Test Profiling")
-    test_data, test_label, test_key, test_stat = run_profiling(test_path, save_path, inside_ip_set, min_sample, timeout,
-                                                               score_dict, 90, 'count', hybrid_count)
+    test_data, test_label, test_key, test_stat = run_profiling('test', test_path, inside_ip_set, score_dict, config)
 
-    print("Min Sample", min_sample, "Timeout :", timeout)
+    print("Min Sample", config['min_sample'], "Timeout :", config['timeout'])
     print("Train Data Size :", len(train_data), "[0]", train_label.count(0), "[1]", train_label.count(1))
     print("Test Data Size :", len(test_data), "[0]", test_label.count(0), "[1]", test_label.count(1))
 

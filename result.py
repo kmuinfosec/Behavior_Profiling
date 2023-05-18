@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, auc, precision_recall_curve, accuracy_score, classification_report
 
 
-def print_optim_f1(min_sample, timeout, save_path, tmp_label, recon, label_set):
+def print_optim_f1(tmp_label, recon, config):
     print("Save Result...")
     tmp_label = [abs(i-1) for i in tmp_label]
     precisions, recalls, thresholds = precision_recall_curve(tmp_label, recon)
@@ -28,7 +28,8 @@ def print_optim_f1(min_sample, timeout, save_path, tmp_label, recon, label_set):
     print("F1-Score:", target_f1)
     print("Threshold:", thresholds[target_idx])
 
-    with open(rf"{save_path}\({label_set})result_min_{min_sample}_to_{timeout}.txt", 'w', encoding='utf-8', newline='') as f:
+    with open(
+            rf"{config['save_path']}\({config['label_set']})result_min_{config['min_sample']}_to_{config['timeout']}.txt", 'w', encoding='utf-8', newline='') as f:
         f.write("Accuracy : " + str(acc) + "\n")
         f.write("Recall : " + str(recalls[target_idx]) + "\n")
         f.write("Precision: " + str(precisions[target_idx]) + "\n")
@@ -37,7 +38,7 @@ def print_optim_f1(min_sample, timeout, save_path, tmp_label, recon, label_set):
         f.write(classification_report(tmp_label, tmp_pred))
 
 
-def print_plt(min_sample, timeout, save_path, label, rce_list, label_set):
+def print_plt(label, rce_list, config):
     print("Save plt...")
 
     attack_loss = []
@@ -55,40 +56,41 @@ def print_plt(min_sample, timeout, save_path, label, rce_list, label_set):
     plt.legend()
     plt.ylabel("IP Count")
     plt.xlabel("Reconstruction Error")
-    plt.savefig(rf"{save_path}\({label_set})plt_min_{min_sample}_to_{timeout}.png")
+    plt.savefig(
+        rf'{config["save_path"]}\({config["label_set"]})plt_min_{config["min_sample"]}_to_{config["timeout"]}.png')
 
 
-def print_csv(min_sample, timeout, save_path, label, rce_list, ip_list, score_dict, label_set, n=100):
+def print_csv(label, rce_list, ip_list, score_dict, config):
     print("Save csv...")
     sorted_rce_idx = np.argsort(rce_list)
-    with open(rf"{save_path}\({label_set})top{n}_min_{min_sample}_to_{timeout}.csv", 'w', encoding='utf-8', newline='') as f:
+    with open(rf"{config['save_path']}\({config['label_set']})top{config['k']}_min_{config['min_sample']}_to_{config['timeout']}.csv", 'w', encoding='utf-8', newline='') as f:
         csv_writer = csv.writer(f)
         csv_writer.writerow(["IP", "RCE", "SCORE", "Label"])
         for idx, i in enumerate(sorted_rce_idx):
-            if idx >= 100:
+            if idx >= config['k']:
                 break
             else:
                 csv_writer.writerow([ip_list[i], rce_list[i],
                                      score_dict[ip_list[i]] if ip_list[i] in score_dict else 0, label[i]])
 
 
-def save_result(min_sample, timeout, save_path, label, rce_list, ip_list, score_dict, label_set):
-    print_optim_f1(min_sample, timeout, save_path, label, rce_list, label_set)
-    print_plt(min_sample, timeout, save_path, label, rce_list, label_set)
-    print_csv(min_sample, timeout, save_path, label, rce_list, ip_list, score_dict, label_set, 100)
+def save_result(label, rce_list, ip_list, score_dict, config):
+    print_optim_f1(label, rce_list, config)
+    print_plt(label, rce_list, config)
+    print_csv(label, rce_list, ip_list, score_dict, config)
 
 
-def save_config(save_path, min_sample, hybrid_count, timeout, preprocessing_path, label_set):
-    with open(rf"{save_path}\config.txt", 'w', newline='', encoding='utf-8') as f:
-        f.write('Profiling : Count\n')
-        f.write('Method : Hybrid\n')
-        f.write(f'MinSample :{min_sample}\n')
-        f.write(f'Hybrid Count :{hybrid_count}\n')
-        f.write(f'Timeout :{timeout}\n')
-        if preprocessing_path:
-            f.write(f'Preprocessing Path :{preprocessing_path}\n')
-        f.write(f'Label API :{label_set}\n')
-        f.write(f'Save Path : {save_path}')
+def save_config(config):
+    with open(rf"{config['save_path']}\config.txt", 'w', newline='', encoding='utf-8') as f:
+        f.write(f'Profiling : {config["mode"]}\n')
+        f.write(f'Method : {config["method"]}\n')
+        f.write(f'MinSample :{config["min_sample"]}\n')
+        f.write(f'Hybrid Count :{config["hybrid_count"]}\n')
+        f.write(f'Timeout :{config["timeout"]}\n')
+        if config["preprocessing_path"]:
+            f.write(f'Preprocessing Path :{config["preprocessing_path"]}\n')
+        f.write(f'Label API :{config["label_set"]}\n')
+        f.write(f'Save Path : {config["save_path"]}')
 
 
 def main():

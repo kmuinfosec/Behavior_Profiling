@@ -10,13 +10,13 @@ from feature.abstract_profile import CommonProfile
 
 
 class CountBasedProfile(CommonProfile):
-    def __init__(self, data_path, inside_ip_set, min_sample, timeout, method='hybrid', hybrid=3):
+    def __init__(self, data_path, inside_ip_set, config):
         super(CountBasedProfile, self).__init__()
-        self.hybrid = hybrid
-        self.method = method
+        self.hybrid = config['hybrid_count']
+        self.method = config['method']
         self.data_path = data_path
-        self.min_sample = min_sample
-        self.timeout = timeout
+        self.min_sample = config['min_sample']
+        self.timeout = config['timeout']
         self.inside_ip_set = inside_ip_set
         self.feature_matrix = [[] for _ in range(len(self.feature_list))]
         self.profile_key_list = []
@@ -42,7 +42,7 @@ class CountBasedProfile(CommonProfile):
                         if target_ip not in self.flow_stack:
                             self.process_new_ip(target_ip, now_time)
                         while self.flow_stack[target_ip]['st_time'] < now_time - self.timeout:
-                            self.process_timeout(target_ip, now_time)
+                            self.process_timeout(target_ip)
                             self.process_new_ip(target_ip, now_time)
                         self.grouping_flow(flow, now_time, target_ip)
         print(f"Profiling Finish...")
@@ -67,7 +67,8 @@ class CountBasedProfile(CommonProfile):
 
     def process_rest_dict(self):
         for key in list(self.flow_stack.keys()):
-            self.process_timeout(key, 1e+10)
+            while len(self.flow_stack[key]['flow']) > 0:
+                self.process_timeout(key)
 
     def make_feature(self):
         for profile in tqdm(self.profile_list):
@@ -92,7 +93,7 @@ class CountBasedProfile(CommonProfile):
         self.profile_key_list.append(profile_key)
         self.flow_stack[target_ip]['flow'].pop(0)
 
-    def process_timeout(self, target_ip, now_time):
+    def process_timeout(self, target_ip):
         if self.method == 'rest':
             self.update_flow(target_ip)
         elif self.method == 'one_rest':
@@ -156,11 +157,11 @@ class CountBasedProfile(CommonProfile):
 
 
 class TimeBasedProfile(CommonProfile):
-    def __init__(self, data_path, inside_ip_set, min_sample, time_window, method='discard'):
+    def __init__(self, data_path, inside_ip_set, config):
         super(TimeBasedProfile, self).__init__()
-        self.min_sample = min_sample
-        self.time_window = time_window
-        self.method = method
+        self.min_sample = config['min_sample']
+        self.time_window = config['timeout']
+        self.method = config['method']
         self.data_path = data_path
         self.inside_ip_set = inside_ip_set
         self.feature_matrix = [[] for _ in range(len(self.feature_list))]
