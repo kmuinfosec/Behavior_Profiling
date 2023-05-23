@@ -78,6 +78,7 @@ def init_config(options):
     config['hybrid_count'] = options.hybrid_count if options.hybrid_count else 3
     config['abused_score'] = options.abused if options.abused else 90
     config['k'] = options.k if options.k else 100
+    config['save_rce'] = bool(options.save_rce)
     if options.preprocessing_path:
         config['preprocessing_path'] = os.path.abspath(options.preprocessing_path)
     else:

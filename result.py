@@ -1,4 +1,5 @@
 import csv
+import pickle
 
 import numpy as np
 
@@ -29,7 +30,7 @@ def print_optim_f1(tmp_label, recon, config):
     print("Threshold:", thresholds[target_idx])
 
     with open(
-            rf"{config['save_path']}\({config['label_set']})result_min_{config['min_sample']}_to_{config['timeout']}.txt", 'w', encoding='utf-8', newline='') as f:
+            rf"{config['save_path']}\({config['label_set']})result_min_{config['min_sample']}_to_{config['timeout']}_hy_{config['hybrid_count']}.txt", 'w', encoding='utf-8', newline='') as f:
         f.write("Accuracy : " + str(acc) + "\n")
         f.write("Recall : " + str(recalls[target_idx]) + "\n")
         f.write("Precision: " + str(precisions[target_idx]) + "\n")
@@ -57,13 +58,13 @@ def print_plt(label, rce_list, config):
     plt.ylabel("IP Count")
     plt.xlabel("Reconstruction Error")
     plt.savefig(
-        rf'{config["save_path"]}\({config["label_set"]})plt_min_{config["min_sample"]}_to_{config["timeout"]}.png')
+        rf'{config["save_path"]}\({config["label_set"]})plt_min_{config["min_sample"]}_to_{config["timeout"]}_hy_{config["hybrid_count"]}.png')
 
 
 def print_csv(label, rce_list, ip_list, score_dict, config):
     print("Save csv...")
     sorted_rce_idx = np.argsort(rce_list)
-    with open(rf"{config['save_path']}\({config['label_set']})top{config['k']}_min_{config['min_sample']}_to_{config['timeout']}.csv", 'w', encoding='utf-8', newline='') as f:
+    with open(rf"{config['save_path']}\({config['label_set']})top{config['k']}_min_{config['min_sample']}_to_{config['timeout']}_hy_{config['hybrid_count']}.csv", 'w', encoding='utf-8', newline='') as f:
         csv_writer = csv.writer(f)
         csv_writer.writerow(["IP", "RCE", "SCORE", "Label"])
         for idx, i in enumerate(sorted_rce_idx):
@@ -78,18 +79,21 @@ def save_result(label, rce_list, ip_list, score_dict, config):
     print_optim_f1(label, rce_list, config)
     print_plt(label, rce_list, config)
     print_csv(label, rce_list, ip_list, score_dict, config)
+    if config['save_rce']:
+        with open(rf"{config['save_path']}\rce_list.pkl", 'wb') as f:
+            pickle.dump(rce_list, f)
 
 
 def save_config(config):
     with open(rf"{config['save_path']}\config.txt", 'w', newline='', encoding='utf-8') as f:
         f.write(f'Profiling : {config["mode"]}\n')
         f.write(f'Method : {config["method"]}\n')
-        f.write(f'MinSample :{config["min_sample"]}\n')
-        f.write(f'Hybrid Count :{config["hybrid_count"]}\n')
-        f.write(f'Timeout :{config["timeout"]}\n')
+        f.write(f'MinSample : {config["min_sample"]}\n')
+        f.write(f'Hybrid Count : {config["hybrid_count"]}\n')
+        f.write(f'Timeout : {config["timeout"]}\n')
         if config["preprocessing_path"]:
-            f.write(f'Preprocessing Path :{config["preprocessing_path"]}\n')
-        f.write(f'Label API :{config["label_set"]}\n')
+            f.write(f'Preprocessing Path : {config["preprocessing_path"]}\n')
+        f.write(f'Label API : {config["label_set"]}\n')
         f.write(f'Save Path : {config["save_path"]}')
 
 

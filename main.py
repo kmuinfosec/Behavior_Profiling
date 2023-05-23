@@ -34,23 +34,34 @@ def main():
     parser.add_option('-t', dest='timeout', type='int', help='maximum timeout')
     parser.add_option('-p', dest='data_path', type='string', help='pickle data path')
     parser.add_option('-l', dest='label_set', type='string', help='label dictionary(Abused/GN)')
-    parser.add_option('--abused', dest='abused', type='int', help='threshold to devide normal and mal when using abused score ')
+    parser.add_option('--abused', dest='abused', type='int', help='threshold to devide normal and mal when using '
+                                                                  'abused score ')
     parser.add_option('--pre', dest='preprocessing_path', type='string', help='preprocessed pickle path')
     parser.add_option('--topk', dest='k', type='int', help='top k-th reconstruction error rate')
+    parser.add_option('--save_rce', dest='save_rce', type='string', help='save rce list')
     (options, args) = parser.parse_args()
     config = init_config(options)
 
     save_dir = r"D:\Behavior_Profiling_result"
-    save_path = os.path.join(save_dir, format_date(6))
-    os.mkdir(os.path.join(save_dir, format_date(6)))
-    config['save_path'] = save_path
-    # for timeout in [60*60, 4*60*60, 12*60*60, 48*60*60]:
-    #     config['timeout'] = timeout
-    #     experiments(config)
-    #     gc.collect()
 
-    experiments(config)
-    save_config(config)
+    for timeout in [60*60, 4*60*60, 12*60*60, 48*60*60]:
+        for min_sample in [5, 10, 20]:
+            for hybrid in [3, 5]:
+                save_path = os.path.join(save_dir, format_date(6))
+                os.mkdir(save_path)
+                config['save_path'] = save_path
+                config['timeout'] = timeout
+                config['min_sample'] = min_sample
+                config['hybrid_count'] = hybrid
+                experiments(config)
+                save_config(config)
+                gc.collect()
+
+    # save_path = os.path.join(save_dir, format_date(6))
+    # os.mkdir(save_path)
+    # config['save_path'] = save_path
+    # experiments(config)
+    # save_config(config)
 
 
 if __name__ == '__main__':
