@@ -21,12 +21,12 @@ class CommonProfile:
         self.feature_func_map = {
             'target_ip':
                 lambda x: str(IPv4Address(int(IPv4Address(x.target_ip)) >> (32 - 32) << (32 - 32))),
-            'target_key_port':
-                lambda x: sorted(
-                    zip(*np.unique(x['target_port'], return_counts=True)), key=lambda y: y[1], reverse=True)[0][0],
-            'opposite_key_port':
-                lambda x: sorted(
-                    zip(*np.unique(x['opposite_port'], return_counts=True)), key=lambda y: y[1], reverse=True)[0][0],
+            # 'target_key_port':
+            #     lambda x: sorted(
+            #         zip(*np.unique(x['target_port'], return_counts=True)), key=lambda y: y[1], reverse=True)[0][0],
+            # 'opposite_key_port':
+            #     lambda x: sorted(
+            #         zip(*np.unique(x['opposite_port'], return_counts=True)), key=lambda y: y[1], reverse=True)[0][0],
             'card_target_port':
                 lambda x: len(set(x['target_port'])),
             'card_opposite_ip':

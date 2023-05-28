@@ -39,6 +39,7 @@ def main():
     parser.add_option('--pre', dest='preprocessing_path', type='string', help='preprocessed pickle path')
     parser.add_option('--topk', dest='k', type='int', help='top k-th reconstruction error rate')
     parser.add_option('--save_rce', dest='save_rce', type='string', help='save rce list')
+    parser.add_option('--output_method', dest='output_method', type='string', help='how to make title rce in ip')
     (options, args) = parser.parse_args()
     config = init_config(options)
 

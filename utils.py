@@ -79,6 +79,7 @@ def init_config(options):
     config['abused_score'] = options.abused if options.abused else 90
     config['k'] = options.k if options.k else 100
     config['save_rce'] = bool(options.save_rce)
+    config['output_method'] = options.output_method if options.output_method else 'min'
     if options.preprocessing_path:
         config['preprocessing_path'] = os.path.abspath(options.preprocessing_path)
     else:

@@ -1,10 +1,36 @@
 import csv
+import os.path
 import pickle
 
 import numpy as np
 
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, auc, precision_recall_curve, accuracy_score, classification_report
+
+
+def reconstruct_rce(label, rce, ip_list, config):
+    rce_dict = {}
+    ret_label = []
+    ret_rce = []
+    ret_ip = []
+    for idx, ip in enumerate(ip_list):
+        if ip not in rce_dict:
+            rce_dict[ip] = {'label': label[idx], 'rce': []}
+        rce_dict[ip]['rce'].append(rce[idx])
+
+    if config['output_method'] == 'min':
+        for ip in rce_dict:
+            ret_label.append(rce_dict[ip]['label'])
+            ret_rce.append(min(rce_dict[ip]['rce']))
+    elif config['output_method'] == 'max':
+        for ip in rce_dict:
+            ret_label.append(rce_dict[ip]['label'])
+            ret_rce.append(max(rce_dict[ip]['rce']))
+    elif config['output_method'] == 'mean':
+        for ip in rce_dict:
+            ret_label.append(rce_dict[ip]['label'])
+            ret_rce.append(np.mean(rce_dict[ip]['rce']))
+    return ret_label, ret_rce, ret_ip
 
 
 def print_optim_f1(tmp_label, recon, config):
@@ -29,8 +55,10 @@ def print_optim_f1(tmp_label, recon, config):
     print("F1-Score:", target_f1)
     print("Threshold:", thresholds[target_idx])
 
-    with open(
-            rf"{config['save_path']}\({config['label_set']})result_min_{config['min_sample']}_to_{config['timeout']}_hy_{config['hybrid_count']}.txt", 'w', encoding='utf-8', newline='') as f:
+    save_path = rf"{config['save_path']}\({config['label_set']})result_min_{config['min_sample']}_to_{config['timeout']}_hy_{config['hybrid_count']}.txt"
+    if os.path.exists(save_path):
+        save_path =  rf"{config['save_path']}\({config['label_set']})IPresult_min_{config['min_sample']}_to_{config['timeout']}_hy_{config['hybrid_count']}.txt"
+    with open(save_path, 'w', encoding='utf-8', newline='') as f:
         f.write("Accuracy : " + str(acc) + "\n")
         f.write("Recall : " + str(recalls[target_idx]) + "\n")
         f.write("Precision: " + str(precisions[target_idx]) + "\n")
@@ -38,8 +66,10 @@ def print_optim_f1(tmp_label, recon, config):
         f.write("Threshold :" + str(thresholds[target_idx]) + "\n")
         f.write(classification_report(tmp_label, tmp_pred))
 
+    return thresholds[target_idx]
 
-def print_plt(label, rce_list, config):
+
+def print_plt(label, rce_list, th, config):
     print("Save plt...")
 
     attack_loss = []
@@ -54,17 +84,23 @@ def print_plt(label, rce_list, config):
     plt.rc('font', size=15)
     plt.hist(attack_loss, color='r', range=(0, 3), alpha=0.5, bins=100, log=True, label='Malicious IP')
     plt.hist(benign_loss, color='b', range=(0, 3), alpha=0.5, bins=100, log=True, label='Benign IP')
+    plt.axvline(th, color='red')
     plt.legend()
     plt.ylabel("IP Count")
     plt.xlabel("Reconstruction Error")
-    plt.savefig(
-        rf'{config["save_path"]}\({config["label_set"]})plt_min_{config["min_sample"]}_to_{config["timeout"]}_hy_{config["hybrid_count"]}.png')
+    save_path = rf'{config["save_path"]}\({config["label_set"]})plt_min_{config["min_sample"]}_to_{config["timeout"]}_hy_{config["hybrid_count"]}.png'
+    if os.path.exists(save_path):
+        save_path = rf'{config["save_path"]}\({config["label_set"]})IPplt_min_{config["min_sample"]}_to_{config["timeout"]}_hy_{config["hybrid_count"]}.png'
+    plt.savefig(save_path)
 
 
 def print_csv(label, rce_list, ip_list, score_dict, config):
     print("Save csv...")
     sorted_rce_idx = np.argsort(rce_list)
-    with open(rf"{config['save_path']}\({config['label_set']})top{config['k']}_min_{config['min_sample']}_to_{config['timeout']}_hy_{config['hybrid_count']}.csv", 'w', encoding='utf-8', newline='') as f:
+    save_path = rf"{config['save_path']}\({config['label_set']})top{config['k']}_min_{config['min_sample']}_to_{config['timeout']}_hy_{config['hybrid_count']}.csv"
+    if os.path.exists(save_path):
+        save_path = rf"{config['save_path']}\({config['label_set']})IPtop{config['k']}_min_{config['min_sample']}_to_{config['timeout']}_hy_{config['hybrid_count']}.csv"
+    with open(save_path, 'w', encoding='utf-8', newline='') as f:
         csv_writer = csv.writer(f)
         csv_writer.writerow(["IP", "RCE", "SCORE", "Label"])
         for idx, i in enumerate(sorted_rce_idx):
@@ -76,12 +112,17 @@ def print_csv(label, rce_list, ip_list, score_dict, config):
 
 
 def save_result(label, rce_list, ip_list, score_dict, config):
-    print_optim_f1(label, rce_list, config)
-    print_plt(label, rce_list, config)
+    th = print_optim_f1(label, rce_list, config)
+    print_plt(label, rce_list, th, config)
     print_csv(label, rce_list, ip_list, score_dict, config)
     if config['save_rce']:
         with open(rf"{config['save_path']}\rce_list.pkl", 'wb') as f:
             pickle.dump(rce_list, f)
+
+    ip_label, ip_rce_list, ip_list = reconstruct_rce(label, rce_list, ip_list, config)
+    th = print_optim_f1(ip_label, ip_rce_list, config)
+    print_plt(ip_label, ip_rce_list, th, config)
+    print_csv(ip_label, ip_rce_list, ip_list, score_dict, config)
 
 
 def save_config(config):
@@ -90,6 +131,7 @@ def save_config(config):
         f.write(f'Method : {config["method"]}\n')
         f.write(f'MinSample : {config["min_sample"]}\n')
         f.write(f'Hybrid Count : {config["hybrid_count"]}\n')
+        f.write(f'IP rce aggregate Method : {config["output_method"]}\n')
         f.write(f'Timeout : {config["timeout"]}\n')
         if config["preprocessing_path"]:
             f.write(f'Preprocessing Path : {config["preprocessing_path"]}\n')
